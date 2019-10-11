@@ -1,0 +1,9 @@
+cache:
+  yarn: true
+
+before_install:
+  - yarn --version
+
+script:
+  - yarn install
+  - yarn test
