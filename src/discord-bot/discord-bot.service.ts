@@ -58,7 +58,6 @@ export class DiscordBotService {
     private readonly configService: ConfigService,
   ) {
     this.discordBotToken = configService.get<string>('DISCORD_BOT_TOKEN');
-    console.log(this.discordBotToken);
     this.createBot();
     this.initBot();
   }
