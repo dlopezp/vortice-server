@@ -183,7 +183,7 @@ export class DiscordBotService {
 
         if (authorIsOfficerOfMember && !isBackup) {
           try {
-            await member.removeRole(backupRole);
+            await member.addRole(backupRole);
           } catch (e) {
             console.error(e);
           }
