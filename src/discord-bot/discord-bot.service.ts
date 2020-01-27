@@ -167,8 +167,7 @@ export class DiscordBotService {
       const fields = authorOfficerRolesNames.map(
         (officerRoleName: string) => {
           const guildRoleName = guildRoleNameByOfficerRole[officerRoleName];
-          const channel: TextChannel = msg.channel as TextChannel;
-          const members = channel.members;
+          const members = msg.guild.members;
           const backupMembers = members.filter(
             (member: GuildMember) => {
               const memberRolesNames = this.getRolesNames(member);
