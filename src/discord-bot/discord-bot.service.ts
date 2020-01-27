@@ -142,8 +142,8 @@ export class DiscordBotService {
             "value": "Añade reservas"
           },
           {
-            "name": "cv.lr",
-            "value": "Elimina reservas"
+            "name": "cv.rr",
+            "value": "Retira reservas"
           }
         ]
       });
@@ -285,7 +285,7 @@ export class DiscordBotService {
       }
 
       const embed = this.createEmbed({
-        title: 'Eliminar rol de Reserva',
+        title: 'Retirar rol de Reserva',
         description: 'Este es el listado de miembros con el rol de @Reserva de los gremios de los que eres oficial',
         fields,
       });
