@@ -50,7 +50,7 @@ const guildRoleNameByOfficerRole = {
 
 @Injectable()
 export class DiscordBotService {
-  private static PREFIX: string = 'vv';
+  private static PREFIX: string = 'cv';
   private bot: Client;
   private discordBotToken: string;
 
@@ -130,19 +130,19 @@ export class DiscordBotService {
         description: 'Este es el listado de comandos disponibles.',
         fields: [
           {
-            "name": "vv.help",
+            "name": "cv.help",
             "value": "Muestra la ayuda"
           },
           {
-            "name": "vv.lr",
+            "name": "cv.lr",
             "value": "Muestra el listado de reservas de tu gremio"
           },
           {
-            "name": "vv.ar",
+            "name": "cv.ar",
             "value": "Añade reservas"
           },
           {
-            "name": "vv.lr",
+            "name": "cv.lr",
             "value": "Elimina reservas"
           }
         ]
