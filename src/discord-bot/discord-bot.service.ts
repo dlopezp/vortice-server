@@ -62,7 +62,7 @@ export class DiscordBotService {
     this.initBot();
   }
 
-  init() {}
+  init() { }
 
   private createBot() {
     this.bot = new Discord.Client();
@@ -113,13 +113,46 @@ export class DiscordBotService {
   }
 
   private commandNotFound(msg: Message) {
-    msg.reply('Command not found');
+    return async (msg: Message) => {
+      const embed = this.createEmbed({ description: 'No se encuentra el comando' });
+      try {
+        await msg.channel.send({ embed });
+      } catch (e) {
+        console.log(e);
+      }
+    };
   }
 
   private showHelp() {
-    return (msg: Message) => {
-      msg.reply('showHelp');
-    }
+    return async (msg: Message) => {
+      const embed = this.createEmbed({
+        title: 'Listado de comandos',
+        description: 'Este es el listado de comandos disponibles.',
+        fields: [
+          {
+            "name": "vv.help",
+            "value": "Muestra la ayuda"
+          },
+          {
+            "name": "vv.lr",
+            "value": "Muestra el listado de reservas de tu gremio"
+          },
+          {
+            "name": "vv.ar",
+            "value": "Añade reservas"
+          },
+          {
+            "name": "vv.lr",
+            "value": "Elimina reservas"
+          }
+        ]
+      });
+      try {
+        await msg.channel.send({ embed });
+      } catch (e) {
+        console.log(e);
+      }
+    };
   }
 
   private listBackup() {
@@ -147,7 +180,7 @@ export class DiscordBotService {
           );
           const value = backupMembers.map((member: GuildMember) => member.nickname).join('\n');
 
-          return { name: guildRoleName, value  };
+          return { name: guildRoleName, value };
         },
       );
 
@@ -169,7 +202,7 @@ export class DiscordBotService {
         return;
       }
 
-      const backupRole = msg.guild.roles.find( (role: Role) => role.name === Roles.Reserva );
+      const backupRole = msg.guild.roles.find((role: Role) => role.name === Roles.Reserva);
 
       const membersRolesNames = []
         .concat(authorOfficerRolesNames)
@@ -192,9 +225,9 @@ export class DiscordBotService {
         const name = member.nickname;
         const value = !authorIsOfficerOfMember
           ? 'No pertenece a tu gremio'
-            : isBackup
-              ? 'Ya tiene el rol de Reserva'
-              : 'Rol de reserva añadido';
+          : isBackup
+            ? 'Ya tiene el rol de Reserva'
+            : 'Rol de reserva añadido';
 
         fields.push({ name, value });
       }
@@ -221,7 +254,7 @@ export class DiscordBotService {
         return;
       }
 
-      const backupRole = msg.guild.roles.find( (role: Role) => role.name === Roles.Reserva );
+      const backupRole = msg.guild.roles.find((role: Role) => role.name === Roles.Reserva);
 
       const membersRolesNames = []
         .concat(authorOfficerRolesNames)
@@ -244,9 +277,9 @@ export class DiscordBotService {
         const name = member.nickname;
         const value = !authorIsOfficerOfMember
           ? 'No pertenece a tu gremio'
-            : !isBackup
-              ? 'No tiene el rol de Reserva'
-              : 'Rol de reserva eliminado';
+          : !isBackup
+            ? 'No tiene el rol de Reserva'
+            : 'Rol de reserva eliminado';
 
         fields.push({ name, value });
       }
@@ -282,7 +315,7 @@ export class DiscordBotService {
     return this.createEmbed({ title, description, color: 0xdf342a });
   }
 
-  private createEmbed({ title, description, color = 3447003, fields = [] }) {
+  private createEmbed({ title = '', description, color = 3447003, fields = [] }) {
     return { color, title, description, fields, timestamp: new Date(), footer: { text: '© Comunidad Vórtice' } };
   }
 }
