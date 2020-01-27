@@ -233,7 +233,7 @@ export class DiscordBotService {
 
       const embed = this.createEmbed({
         title: 'Añadir rol de Reserva',
-        description: 'Este es el listado de miembros con el rol de @Reserva de los gremios de los que eres oficial',
+        description: 'Añade el rol de Reserva a los miembros mencionados',
         fields,
       });
       try {
@@ -285,7 +285,7 @@ export class DiscordBotService {
 
       const embed = this.createEmbed({
         title: 'Retirar rol de Reserva',
-        description: 'Este es el listado de miembros con el rol de @Reserva de los gremios de los que eres oficial',
+        description: 'Retira el rol de Reserva a los miembros mencionados',
         fields,
       });
       try {
