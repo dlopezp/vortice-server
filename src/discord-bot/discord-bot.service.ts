@@ -177,7 +177,7 @@ export class DiscordBotService {
               return isBackup && isGuildMember;
             }
           );
-          const value = backupMembers.map((member: GuildMember) => member.nickname).join('\n');
+          const value = backupMembers.map((member: GuildMember) => member.displayName).join('\n');
 
           return { name: guildRoleName, value };
         },
