@@ -221,7 +221,7 @@ export class DiscordBotService {
           }
         }
 
-        const name = member.nickname;
+        const name = member.displayName;
         const value = !authorIsOfficerOfMember
           ? 'No pertenece a tu gremio'
           : isBackup
@@ -273,7 +273,7 @@ export class DiscordBotService {
           }
         }
 
-        const name = member.nickname;
+        const name = member.displayName;
         const value = !authorIsOfficerOfMember
           ? 'No pertenece a tu gremio'
           : !isBackup
