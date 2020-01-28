@@ -108,11 +108,11 @@ export class DiscordBotService {
       [Command.RemoveBackup]: this.removeBackup(),
     };
 
-    const handler = commandMap[command] || this.commandNotFound;
+    const handler = commandMap[command] || this.commandNotFound();
     return handler;
   }
 
-  private commandNotFound(msg: Message) {
+  private commandNotFound() {
     return async (msg: Message) => {
       const embed = this.createEmbed({ description: 'No se encuentra el comando' });
       try {
