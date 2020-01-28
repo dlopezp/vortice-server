@@ -80,7 +80,8 @@ export class DiscordBotService {
   private onMessage() {
     return async (msg: Message) => {
       const content = msg.content;
-      if (!content.startsWith(DiscordBotService.PREFIX)) {
+      const prefix = content.split('.')[0].toLowerCase();
+      if (prefix !== DiscordBotService.PREFIX) {
         console.log('Discard message', content);
         return;
       }
@@ -97,7 +98,7 @@ export class DiscordBotService {
   }
 
   private getCommand(content: string) {
-    return content.split(' ')[0].substring(3);
+    return content.split(' ')[0].substring(3).toLowerCase();
   }
 
   private getHandler(command: string) {
