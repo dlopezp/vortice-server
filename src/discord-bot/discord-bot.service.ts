@@ -8,6 +8,8 @@ enum Command {
   ListBackup = 'lr',
   AddBackup = 'ar',
   RemoveBackup = 'rr',
+  AddToGuild = 'ag',
+  RemoveFromGuild = 'rg',
 }
 
 enum Roles {
@@ -107,6 +109,8 @@ export class DiscordBotService {
       [Command.ListBackup]: this.listBackup(),
       [Command.AddBackup]: this.addBackup(),
       [Command.RemoveBackup]: this.removeBackup(),
+      [Command.AddToGuild]: this.addToGuild(),
+      [Command.RemoveFromGuild]: this.removeFromGuild(),
     };
 
     const handler = commandMap[command] || this.commandNotFound();
@@ -135,6 +139,22 @@ export class DiscordBotService {
             "value": "Muestra la ayuda"
           },
           {
+            "name": "cv.ag",
+            "value": "Añade el rol de gremio"
+          },
+          {
+            "name": "cv.rg",
+            "value": "Retira el rol de gremio"
+          },
+          {
+            "name": "cv.po",
+            "value": "Promociona a oficial en el gremio"
+          },
+          {
+            "name": "cv.do",
+            "value": "Degrada a un oficial en el gremio"
+          },
+          {
             "name": "cv.lr",
             "value": "Muestra el listado de reservas de tu gremio"
           },
@@ -145,8 +165,8 @@ export class DiscordBotService {
           {
             "name": "cv.rr",
             "value": "Retira reservas"
-          }
-        ]
+          },
+        ],
       });
       try {
         await msg.channel.send({ embed });
@@ -295,6 +315,104 @@ export class DiscordBotService {
         console.log(e);
       }
     }
+  }
+
+  private addToGuild() {
+    return async (msg: Message) => {
+      const authorOfficerRolesNames = this.officerRolesNames(msg.member);
+      if (!authorOfficerRolesNames.length) {
+        const embed = this.createErrorEmbed({ title: 'Error', description: 'No eres oficial de ningún gremio.' });
+        await msg.channel.send({ embed });
+        return;
+      }
+
+      const authorGuildRoles: string[] = authorOfficerRolesNames.map((roleName: string) => guildRoleNameByOfficerRole[roleName]);
+      const targetGuildRoles: Role[] = Array.from(msg.mentions.roles.values());
+      const guildRolesToAdd = targetGuildRoles.filter((guildRole: Role) => authorGuildRoles.includes(guildRole.name));
+      const bannedGuildRoles = targetGuildRoles.filter((guildRole: Role) => !authorGuildRoles.includes(guildRole.name));
+
+      for (const bannedGuildRole of bannedGuildRoles) {
+        await msg.channel.send({ embed: this.createErrorEmbed({ title: 'Error', description: 'No puedes añadir el rol ' + bannedGuildRole.name + '.' }) });
+      }
+
+      if (!guildRolesToAdd.length) { return; }
+
+      const fields = [];
+      for (const member of msg.mentions.members.values()) {
+        try {
+          await member.addRoles(guildRolesToAdd);
+        } catch (e) {
+          console.error(e);
+        }
+
+        const name = member.displayName;
+        const value = 'Añadido a ' + Array.from(guildRolesToAdd).map((role: Role) => role.name).join(', ');
+
+        fields.push({ name, value });
+      }
+
+      if (!fields.length) { return; }
+
+      const embed = this.createEmbed({
+        title: 'Añadir al gremio',
+        description: 'Añadidos al gremio',
+        fields,
+      });
+      try {
+        await msg.channel.send({ embed });
+      } catch (e) {
+        console.log(e);
+      }
+    };
+  }
+
+  private removeFromGuild() {
+    return async (msg: Message) => {
+      const authorOfficerRolesNames = this.officerRolesNames(msg.member);
+      if (!authorOfficerRolesNames.length) {
+        const embed = this.createErrorEmbed({ title: 'Error', description: 'No eres oficial de ningún gremio.' });
+        await msg.channel.send({ embed });
+        return;
+      }
+
+      const authorGuildRoles: string[] = authorOfficerRolesNames.map((roleName: string) => guildRoleNameByOfficerRole[roleName]);
+      const targetGuildRoles: Role[] = Array.from(msg.mentions.roles.values());
+      const guildRolesToRemove = targetGuildRoles.filter((guildRole: Role) => authorGuildRoles.includes(guildRole.name));
+      const bannedGuildRoles = targetGuildRoles.filter((guildRole: Role) => !authorGuildRoles.includes(guildRole.name));
+
+      for (const bannedGuildRole of bannedGuildRoles) {
+        await msg.channel.send({ embed: this.createErrorEmbed({ title: 'Error', description: 'No puedes quitar el rol ' + bannedGuildRole.name + '.' }) });
+      }
+
+      if (!guildRolesToRemove.length) { return; }
+
+      const fields = [];
+      for (const member of msg.mentions.members.values()) {
+        try {
+          await member.removeRoles(guildRolesToRemove);
+        } catch (e) {
+          console.error(e);
+        }
+
+        const name = member.displayName;
+        const value = 'Eliminado de ' + Array.from(guildRolesToRemove).map((role: Role) => role.name).join(', ');
+
+        fields.push({ name, value });
+      }
+
+      if (!fields.length) { return; }
+
+      const embed = this.createEmbed({
+        title: 'Eliminar del gremio',
+        description: 'Eliminados del gremio',
+        fields,
+      });
+      try {
+        await msg.channel.send({ embed });
+      } catch (e) {
+        console.log(e);
+      }
+    };
   }
 
   private officerRolesNames(member: GuildMember) {
