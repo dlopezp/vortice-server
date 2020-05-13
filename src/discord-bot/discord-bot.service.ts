@@ -333,9 +333,13 @@ export class DiscordBotService {
 
       for (const bannedGuildRole of bannedGuildRoles) {
         await msg.channel.send({ embed: this.createErrorEmbed({ title: 'Error', description: 'No puedes añadir el rol ' + bannedGuildRole.name + '.' }) });
+        return;
       }
 
-      if (!guildRolesToAdd.length) { return; }
+      if (!guildRolesToAdd.length) {
+        await msg.channel.send({ embed: this.createErrorEmbed({ title: 'Error', description: 'Necesitas indicar el rol a añadir.' }) });
+        return;
+      }
 
       const fields = [];
       for (const member of msg.mentions.members.values()) {
@@ -382,9 +386,13 @@ export class DiscordBotService {
 
       for (const bannedGuildRole of bannedGuildRoles) {
         await msg.channel.send({ embed: this.createErrorEmbed({ title: 'Error', description: 'No puedes quitar el rol ' + bannedGuildRole.name + '.' }) });
+        return;
       }
 
-      if (!guildRolesToRemove.length) { return; }
+      if (!guildRolesToRemove.length) {
+        await msg.channel.send({ embed: this.createErrorEmbed({ title: 'Error', description: 'Necesitas indicar el rol a eliminar.' }) });
+        return;
+      }
 
       const fields = [];
       for (const member of msg.mentions.members.values()) {
