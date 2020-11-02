@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Discord from 'discord.js';
-import { Client, Message, Role, GuildMember, TextChannel } from 'discord.js';
+import { Client, Message, Role, GuildMember, TextChannel, Intents } from 'discord.js';
+import PromoteOfficial from './commands/PromoteOfficial';
 
 enum Command {
   Help = 'help',
@@ -67,7 +68,12 @@ export class DiscordBotService {
   init() { }
 
   private createBot() {
-    this.bot = new Discord.Client();
+    const intents = new Intents([
+      Intents.NON_PRIVILEGED, // include all non-privileged intents, would be better to specify which ones you actually need
+      "GUILD_MEMBERS", // lets you request guild members (i.e. fixes the issue)
+    ]);
+    // this.bot = new Discord.Client();
+    this.bot = new Discord.Client({ ws: { intents } });
     this.bot.login(this.discordBotToken);
   }
 
@@ -111,6 +117,7 @@ export class DiscordBotService {
       [Command.RemoveBackup]: this.removeBackup(),
       [Command.AddToGuild]: this.addToGuild(),
       [Command.RemoveFromGuild]: this.removeFromGuild(),
+      [PromoteOfficial.alias]: (new PromoteOfficial()).execute,
     };
 
     const handler = commandMap[command] || this.commandNotFound();
@@ -177,18 +184,19 @@ export class DiscordBotService {
   }
 
   private listBackup() {
-    return (msg: Message) => {
-      const authorOfficerRolesNames = this.officerRolesNames(msg.member);
+    return async (msg: Message) => {
+      const guild = msg.guild;
+      const members = await guild.members.fetch();
+      const member = await guild.members.fetch(msg.author.id);
+      const authorOfficerRolesNames = this.officerRolesNames(member);
       if (!authorOfficerRolesNames.length) {
         const embed = this.createErrorEmbed({ title: 'Error', description: 'No eres oficial de ningún gremio.' });
         msg.channel.send({ embed });
         return;
       }
-
       const fields = authorOfficerRolesNames.map(
         (officerRoleName: string) => {
           const guildRoleName = guildRoleNameByOfficerRole[officerRoleName];
-          const members = msg.guild.members;
           const backupMembers = members.filter(
             (member: GuildMember) => {
               const memberRolesNames = this.getRolesNames(member);
@@ -215,14 +223,18 @@ export class DiscordBotService {
 
   private addBackup() {
     return async (msg: Message) => {
-      const authorOfficerRolesNames = this.officerRolesNames(msg.member);
+      const guild = msg.guild;
+      const members = await guild.members.fetch();
+      const member = await guild.members.fetch(msg.author.id);
+      const authorOfficerRolesNames = this.officerRolesNames(member);
+
       if (!authorOfficerRolesNames.length) {
         const embed = this.createErrorEmbed({ title: 'Error', description: 'No eres oficial de ningún gremio.' });
         await msg.channel.send({ embed });
         return;
       }
 
-      const backupRole = msg.guild.roles.find((role: Role) => role.name === Roles.Reserva);
+      const backupRole = msg.guild.roles.cache.find((role: Role) => role.name === Roles.Reserva);
 
       const membersRolesNames = []
         .concat(authorOfficerRolesNames)
@@ -230,13 +242,13 @@ export class DiscordBotService {
 
       const fields = [];
       for (const member of msg.mentions.members.values()) {
-        const memberRolesNames = member.roles.map((role: Role) => role.name);
+        const memberRolesNames = member.roles.cache.map((role: Role) => role.name);
         const authorIsOfficerOfMember = memberRolesNames.some(memberRoleName => membersRolesNames.includes(memberRoleName));
         const isBackup = memberRolesNames.includes(Roles.Reserva);
 
         if (authorIsOfficerOfMember && !isBackup) {
           try {
-            await member.addRole(backupRole);
+            await member.roles.add(backupRole);
           } catch (e) {
             console.error(e);
           }
@@ -267,14 +279,17 @@ export class DiscordBotService {
 
   private removeBackup() {
     return async (msg: Message) => {
-      const authorOfficerRolesNames = this.officerRolesNames(msg.member);
+      const guild = msg.guild;
+      const members = await guild.members.fetch();
+      const member = await guild.members.fetch(msg.author.id);
+      const authorOfficerRolesNames = this.officerRolesNames(member);
       if (!authorOfficerRolesNames.length) {
         const embed = this.createErrorEmbed({ title: 'Error', description: 'No eres oficial de ningún gremio.' });
         await msg.channel.send({ embed });
         return;
       }
 
-      const backupRole = msg.guild.roles.find((role: Role) => role.name === Roles.Reserva);
+      const backupRole = msg.guild.roles.cache.find((role: Role) => role.name === Roles.Reserva);
 
       const membersRolesNames = []
         .concat(authorOfficerRolesNames)
@@ -282,13 +297,13 @@ export class DiscordBotService {
 
       const fields = [];
       for (const member of msg.mentions.members.values()) {
-        const memberRolesNames = member.roles.map((role: Role) => role.name);
+        const memberRolesNames = member.roles.cache.map((role: Role) => role.name);
         const authorIsOfficerOfMember = memberRolesNames.some(memberRoleName => membersRolesNames.includes(memberRoleName));
         const isBackup = memberRolesNames.includes(Roles.Reserva);
 
         if (authorIsOfficerOfMember && isBackup) {
           try {
-            await member.removeRole(backupRole);
+            await member.roles.remove(backupRole);
           } catch (e) {
             console.error(e);
           }
@@ -344,7 +359,7 @@ export class DiscordBotService {
       const fields = [];
       for (const member of msg.mentions.members.values()) {
         try {
-          await member.addRoles(guildRolesToAdd);
+          await member.roles.add(guildRolesToAdd);
         } catch (e) {
           console.error(e);
         }
@@ -397,7 +412,7 @@ export class DiscordBotService {
       const fields = [];
       for (const member of msg.mentions.members.values()) {
         try {
-          await member.removeRoles(guildRolesToRemove);
+          await member.roles.remove(guildRolesToRemove);
         } catch (e) {
           console.error(e);
         }
@@ -434,7 +449,7 @@ export class DiscordBotService {
   }
 
   private getRolesNames(member: GuildMember) {
-    return member.roles.map((role: Role) => role.name);
+    return member.roles.cache.map((role: Role) => role.name);
   }
 
   private createErrorEmbed({ title, description }) {
