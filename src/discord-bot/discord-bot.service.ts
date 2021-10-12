@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as Discord from 'discord.js';
 import { Client, Message, Role, GuildMember, TextChannel, Intents } from 'discord.js';
+import DiscordCommand from './commands/Command';
 import PromoteOfficial from './commands/PromoteOfficial';
 
 enum Command {
@@ -100,7 +101,11 @@ export class DiscordBotService {
       const command = this.getCommand(content);
       console.log(command);
       const handler = this.getHandler(command);
-      await handler(msg);
+      if (handler instanceof DiscordCommand) {
+        await handler.execute(msg);
+      } else {
+        await handler(msg);
+      }
       await msg.react('👌');
     };
   }
@@ -117,7 +122,7 @@ export class DiscordBotService {
       [Command.RemoveBackup]: this.removeBackup(),
       [Command.AddToGuild]: this.addToGuild(),
       [Command.RemoveFromGuild]: this.removeFromGuild(),
-      [PromoteOfficial.alias]: (new PromoteOfficial()).execute,
+      [PromoteOfficial.alias]: new PromoteOfficial(),
     };
 
     const handler = commandMap[command] || this.commandNotFound();

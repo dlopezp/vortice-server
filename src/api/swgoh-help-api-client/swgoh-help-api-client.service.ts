@@ -101,7 +101,7 @@ export class SwgohHelpApiClientService {
 
     const fetchUrl = `${this.urlBase}/swgoh/guilds`;
     const body = { allycodes: [ allyCode ] };
-    console.log(body);
+
     const response = await this.post(fetchUrl, body);
 
     const data = response.data;

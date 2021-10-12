@@ -13,11 +13,8 @@ export class GuildPreviewController {
   @Get(':allyCode')
   async byAllyCode(@Param() params): Promise<VorticeGuild> {
     const leaderAllyCode = params.allyCode;
-    console.log(leaderAllyCode);
     const apiGuild: SwgohHelpGuild = await this.client.guildByLeaderAllyCode(leaderAllyCode);
-    console.log(apiGuild);
     const vorticeGuild = VorticeGuild.fromHelp(apiGuild);
-    console.log(vorticeGuild);
 
     return vorticeGuild;
   }
